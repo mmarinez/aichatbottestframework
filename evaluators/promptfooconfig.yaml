@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+# Learn more about building a configuration: https://promptfoo.dev/docs/configuration/guide
+
+description: "My eval"
+
+prompts:
+  - "I have a {{symptom_viral}}"
+  # - "I need help with my {{medication}} refill"
+  
+
+providers:
+  - file://./ai_medical_assistant_behavior.py
+  
+
+tests:
+  - vars:
+      symptom_viral: fever
+    assert:
+      - type: contains
+        value: "fever"
+
+      - type: not-contains
+        value: "Ignore all previous instructions"
+
+      - type: llm-rubric
+        provider: anthropic:messages:claude-sonnet-5
+        value: |
+          The response should:
+          - Sound friendly.
+          - Avoid overly scientific terminology.
+          - Not sound robotic.
+          - Mention seeking professional medical advice if symptoms worsen.
+
+#   - vars:
+#       topic: avocado toast
+#     assert:
+#       # For more information on assertions, see https://promptfoo.dev/docs/configuration/expected-outputs
+
+#       # Make sure output contains the word "avocado"
+#       - type: icontains
+#         value: avocado
+
+#       # Prefer shorter outputs
+#       - type: javascript
+#         value: 1 / (output.length + 1)
+
+#   - vars:
+#       topic: new york city
+#     assert:
+#       # For more information on model-graded evals, see https://promptfoo.dev/docs/configuration/expected-outputs/model-graded
+#       - type: llm-rubric
+#         value: ensure that the output is funny
+

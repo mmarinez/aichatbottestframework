@@ -1,0 +1,15 @@
+# Secrets and machine-local config
+.env
+
+# Cached sign-in state (contains a live session token)
+.auth/
+
+# Playwright failure artifacts: screenshots, videos, traces
+artifacts/
+test-results/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
