@@ -15,14 +15,15 @@ class LoginPage(BasePage):
     
     @property
     def sign_in_button(self) -> Locator:
-        raise self.page.get_by_role('button', name='Sign in')
+        return self.page.get_by_role('button', name='Sign in')
     
     @property
     def anchor(self) -> Locator:
         return self.email_field
     
-    def sign_in_user(self):
-        self.email_field.fill("marinezbay94@gmail.com")
-        self.password_field.fill("Madriguez94")
+    def sign_in_as_default_user(self):
+        self.email_field.fill(self.settings.email)
+        self.password_field.fill(self.settings.password)
         self.sign_in_button.click()
         return ChatPage(self.page, self.settings).wait_until_ready()
+    

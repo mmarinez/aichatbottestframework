@@ -13,5 +13,11 @@ class BasePage:
     
     def open(self):
         self.page.goto(f"{self.settings.base_url}{self.path}")
+        return self.wait_until_ready()
+    
+    def wait_until_ready(self):
         expect(self.anchor).to_be_visible()
         return self
+    
+    def is_displayed(self) -> bool:
+        return self.anchor.is_visible()

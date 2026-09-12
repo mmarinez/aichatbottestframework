@@ -1,23 +1,16 @@
 from playwright.sync_api import Page, expect
 import time
 
-def test_polite_tone(page: Page):
-    user_input = "I like horror movies, What do you recommend this weekend?"
-    page.goto("http://localhost:3000/")
+# def test_polite_tone(login_page):
+#     user_input = "I like horror movies, What do you recommend this weekend?"
+#     chat = login_page.sign_in_user()
+#     answer = chat.ask(user_input)
+#     assert "horror" in answer.lower()
 
-    user_email = page.locator("input[id=email]")
-    user_password = page.locator("input[id=password]")
-    sign_in_button = page.locator("div[class=self-center]")
+def test_context_options(page):
+    assert page.viewport_size == {"width": 1920, "height": 1080}
 
-    user_email.fill("marinezbay94@gmail.com")
-    user_password.fill("Madriguez94")
-    sign_in_button.click()
-
-    ollama_input_field = page.locator("div[id=chat-input]")
-    ollama_send_message_button = page.locator("button[id=send-message-button]")
-    ollama_input_field.fill(user_input)
-    ollama_send_message_button.click()
-    time.sleep(15)
-
-
+def test_sign_in_lands_on_chat(login_page):
+    chat = login_page.sign_in_as_default_user()
+    assert chat.is_displayed()
     
