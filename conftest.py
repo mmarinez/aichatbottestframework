@@ -1,5 +1,6 @@
 import pytest
 from config.settings import Settings
+from pages.chat_page import ChatPage
 from pages.login_page import LoginPage
 from playwright.sync_api import expect
 
@@ -24,6 +25,15 @@ def base_url(settings: Settings) -> str:
 @pytest.fixture
 def login_page(page, settings) -> LoginPage:
     return LoginPage(page, settings).open()
+
+@pytest.fixture
+def chat_page(login_page: LoginPage, settings: Settings) -> ChatPage:
+    """Signed in, with the model under test pinned.
+
+    Pinning is not cosmetic: Open WebUI remembers the last model this account
+    used, so without it the suite grades whichever model was clicked last.
+    """
+    return login_page.sign_in_as_default_user().select_model(settings.model)
 
 @pytest.fixture(scope="session", autouse=True)
 def configure_expect_timeout(settings: Settings):
