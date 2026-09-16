@@ -11,7 +11,7 @@ description: "AI medical assistant — prompt/model behaviour"
 defaultTest:
   options:
     provider:
-      id: ollama:chat:qwen2.5:3b
+      id: ollama:chat:gemma4:e4b
       config:
         temperature: 0 # grading should be repeatable, not creative
 

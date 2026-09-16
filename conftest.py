@@ -1,4 +1,5 @@
 import pytest
+import time
 from config.settings import Settings
 from pages.chat_page import ChatPage
 from pages.login_page import LoginPage
@@ -38,3 +39,20 @@ def chat_page(login_page: LoginPage, settings: Settings) -> ChatPage:
 @pytest.fixture(scope="session", autouse=True)
 def configure_expect_timeout(settings: Settings):
     expect.set_options(timeout=settings.expect_timeout_ms)
+
+@pytest.fixture
+def ask(chat_page, recorder, request):
+    counter = itertools.count(1)
+    def _ask(prompt: str) -> str:
+        t0 = time.perf_counter()
+        answer = chat_page.ask(prompt)
+        recorder.record(
+            capture_id=f"{request.node.name}-{next(counter)}"
+            prompt=prompt, 
+            response=answer,
+            model=chat_page.selected_model,
+            duration_ms=int((time.perf_counter() - t0) * 1000),
+            test_id=request.node.nodeid,
+        )
+        return answer
+    return ask
