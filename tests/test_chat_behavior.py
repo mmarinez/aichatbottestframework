@@ -26,17 +26,17 @@ def test_model_under_test_is_pinned(chat_page: ChatPage, settings):
 
 
 @pytest.mark.llm
-def test_answer_addresses_the_prompt(chat_page: ChatPage):
-    answer = chat_page.ask("I like horror movies. What do you recommend this weekend?")
+def test_answer_addresses_the_prompt(ask):
+    answer = ask("I like horror movies. What do you recommend this weekend?")
 
     assert answer, "the assistant returned an empty answer"
     assert "horror" in answer.lower(), f"answer ignored the topic: {answer[:200]!r}"
 
 
 @pytest.mark.llm
-def test_conversation_keeps_context_across_turns(chat_page: ChatPage):
-    chat_page.ask("My favourite film genre is horror. Remember that.")
-    answer = chat_page.ask("What is my favourite film genre? Answer in one word.")
+def test_conversation_keeps_context_across_turns(ask, chat_page):
+    ask("My favourite film genre is horror. Remember that.")
+    answer = ask("What is my favourite film genre? Answer in one word.")
 
     thread = chat_page.thread
     assert thread.user_count == 2
@@ -45,8 +45,8 @@ def test_conversation_keeps_context_across_turns(chat_page: ChatPage):
 
 
 @pytest.mark.llm
-def test_new_chat_clears_the_thread(chat_page: ChatPage):
-    chat_page.ask("Say hello.")
+def test_new_chat_clears_the_thread(ask, chat_page: ChatPage):
+    ask("Say hello.")
     assert not chat_page.thread.is_empty
 
     chat_page.new_chat()
