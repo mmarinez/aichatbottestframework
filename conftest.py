@@ -1,9 +1,12 @@
 import pytest
 import time
-from config.settings import Settings
+import itertools
+from config.settings import Settings, CAPTURES
 from pages.chat_page import ChatPage
 from pages.login_page import LoginPage
 from playwright.sync_api import expect
+from evaluators.recorder import Recorder
+from collections.abc import Iterator
 
 @pytest.fixture(scope="session")
 def browser_context_args(browser_context_args):
@@ -47,7 +50,7 @@ def ask(chat_page, recorder, request):
         t0 = time.perf_counter()
         answer = chat_page.ask(prompt)
         recorder.record(
-            capture_id=f"{request.node.name}-{next(counter)}"
+            capture_id=f"{request.node.name}-{next(counter)}",
             prompt=prompt, 
             response=answer,
             model=chat_page.selected_model,
@@ -55,4 +58,10 @@ def ask(chat_page, recorder, request):
             test_id=request.node.nodeid,
         )
         return answer
-    return ask
+    return _ask
+
+@pytest.fixture(scope="session")
+def recorder() -> Iterator[Recorder]:
+    rec = Recorder(CAPTURES / "latest.jsonl")
+    yield rec
+    rec.export_cases(CAPTURES / "cases.json")
