@@ -9,8 +9,8 @@ def call_api(prompt: str, options: dict, context: dict):
             {
                 "role": "system",
                 "content": (
-                    "You are an AI medical assistant. "
-                    "Your role is to answer questions about symptoms."
+                    "You are an AI movie theather assistant. "
+                    "Your role is to suggest movies."
                 ),
             },
             {

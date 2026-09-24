@@ -40,3 +40,6 @@ class Recorder:
             {"vars": {"capture_id": r["capture_id"],"prompt": r["prompt"]}}
             for r in load_captures(self.path)
         ]
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(json.dumps(cases, indent=2, ensure_ascii=False), encoding="utf-8")
+        return dest
