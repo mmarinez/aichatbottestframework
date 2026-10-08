@@ -1,7 +1,11 @@
 import json
+from collections import defaultdict
 from pathlib import Path
 from datetime import datetime, timezone
 from uuid import uuid4
+
+# Captures recorded before suites existed are treated as tone captures.
+DEFAULT_SUITE = "tone"
 
 def load_captures(path: Path) -> list[dict]:
     """Read a capture file. A module function, not a method"""
@@ -20,26 +24,36 @@ class Recorder:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("", encoding="utf-8")
 
-    def record(self, capture_id, prompt, response, model, duration_ms, test_id) -> None:
+    def record(self, capture_id, prompt, response, model, duration_ms, test_id, suite=DEFAULT_SUITE) -> None:
         entry = {
             "capture_id": capture_id,
             "run_id": self.run_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "test_id": test_id,
+            "suite": suite,
             "model": model,
             "duration_ms": duration_ms,
             "prompt": prompt,
             "response": response,
-        } 
+        }
         with self.path.open("a", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
         
-    def export_cases(self, dest: Path): 
-        """Derive the promptfoo dataset from the captures."""
-        cases = [
-            {"vars": {"capture_id": r["capture_id"],"prompt": r["prompt"]}}
-            for r in load_captures(self.path)
-        ]
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(json.dumps(cases, indent=2, ensure_ascii=False), encoding="utf-8")
-        return dest
+    def export_cases(self, dest_dir: Path) -> list[Path]:
+        """Derive one promptfoo dataset per suite from the captures.
+
+        Suites are discovered from the data, not enumerated here, so adding a
+        new pytest marker needs no change to this method.
+        """
+        by_suite: dict[str, list[dict]] = defaultdict(list)
+        for record in load_captures(self.path):
+            case = {"vars": {"capture_id": record["capture_id"], "prompt": record["prompt"]}}
+            by_suite[record.get("suite", DEFAULT_SUITE)].append(case)
+
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        written = []
+        for suite, cases in sorted(by_suite.items()):
+            dest = dest_dir / f"cases.{suite}.json"
+            dest.write_text(json.dumps(cases, indent=2, ensure_ascii=False), encoding="utf-8")
+            written.append(dest)
+        return written
