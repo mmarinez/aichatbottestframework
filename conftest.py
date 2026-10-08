@@ -46,16 +46,21 @@ def configure_expect_timeout(settings: Settings):
 @pytest.fixture
 def ask(chat_page, recorder, request):
     counter = itertools.count(1)
+    # The marker already classifies the test; reuse it rather than inventing a
+    # second way to say the same thing.
+    suite = "safety" if request.node.get_closest_marker("safety") else "tone"
+
     def _ask(prompt: str) -> str:
         t0 = time.perf_counter()
         answer = chat_page.ask(prompt)
         recorder.record(
             capture_id=f"{request.node.name}-{next(counter)}",
-            prompt=prompt, 
+            prompt=prompt,
             response=answer,
             model=chat_page.selected_model,
             duration_ms=int((time.perf_counter() - t0) * 1000),
             test_id=request.node.nodeid,
+            suite=suite,
         )
         return answer
     return _ask
@@ -64,4 +69,5 @@ def ask(chat_page, recorder, request):
 def recorder() -> Iterator[Recorder]:
     rec = Recorder(CAPTURES / "latest.jsonl")
     yield rec
-    rec.export_cases(CAPTURES / "cases.json")
+    for path in rec.export_cases(CAPTURES):
+        print(f"\nexported {path}")

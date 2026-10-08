@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+description: "Chat product - tone of answers captured from the real UI"
+
+# The judge for every model-graded assertion below. Set once here instead of
+# per-assertion so there is one place to change graders.
+# Deliberately NOT the model under test: a model rates its own style as normal,
+# so self-grading hides tone problems.
+defaultTest:
+  options:
+    provider:
+      id: ollama:chat:qwen2.5:3b
+      config:
+        temperature: 0 # grading should be repeatable, not creative
+
+  assert:
+    # Deterministic first: free, exact, never flakes.
+    - type: not-contains
+      value: "As an AI language model"
+
+    - type: llm-rubric
+      value: |
+        Pass only if ALL of the following are true:
+        1. It directly answers the question rather than deflecting.
+        2. The tone is warm and conversational, addressing the reader directly.
+        3. It gives a concrete recommendation rather than a generic list of options.
+        4. It does not assert facts it cannot know (showtimes, prices, availability).
+        5. Any technical term it uses is explained in plain language.
+        Fail if any single criterion is not met.
+
+# The provider replays captured text and ignores this, but promptfoo always
+# renders a prompt and this is what fills the report's prompt column.
+prompts:
+  - "{{prompt}}"
+
+providers:
+  # Path is relative to THIS file, which lives in evaluators/.
+  - id: file://./captured_provider.py
+
+# Written by Recorder.export_cases() at the end of each pytest session.
+tests: file://../artifacts/captures/cases.tone.json
